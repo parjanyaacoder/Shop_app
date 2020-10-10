@@ -15,10 +15,7 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Your Cart'),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-           height: 1000,
-          child: Column(
+      body: Column(
             children: [
             Card(margin: EdgeInsets.all(15),
             child: Padding(
@@ -28,17 +25,13 @@ class CartScreen extends StatelessWidget {
                 children: [
                   Text('Total',style: TextStyle(fontSize: 20),),
                   Spacer(),
-                //  Consumer<Cart>(
-                  //  builder:(context,cart,child) => Chip(
-                  //  label: Text('\$${cart.totalAmount.toStringAsFixed(2)}',
-                  //  style: TextStyle(color:Theme.of(context).primaryTextTheme.title.color),),
-                  //  backgroundColor: Theme.of(context).primaryColor,),
-                  //  ),
-                  FlatButton(child: Text('ORDER NOW'),onPressed: (){
-                  // Provider.of<Orders>(context).addOrder(cart.items.values.toList());
-                   print(Provider.of<Orders>(context).orders);
-                    cart.clear();
-                  },textColor: Theme.of(context).primaryColor,)
+                 // Consumer<Cart>(
+                 //   builder:(context,cart,child) => Chip(
+                 //   label: Text('\$${cart.totalAmount.toStringAsFixed(2)}',
+                 //   style: TextStyle(color:Theme.of(context).primaryTextTheme.headline6.color),),
+                 //   backgroundColor: Theme.of(context).primaryColor,),
+                 //   ),
+              //   OrderButton(cart: cart)
                 ],
               ),
             ),),
@@ -49,8 +42,37 @@ class CartScreen extends StatelessWidget {
             ),
            ),
           ],),
-        ),
-      ),
+
     );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(child: isLoading ? CircularProgressIndicator() : Text('ORDER NOW'),onPressed: widget.cart.totalAmount <=0 || isLoading ? null : () async {
+      setState(() {
+        isLoading = true;
+      });
+    await  Provider.of<Orders>(context).addOrder(widget.cart.items.values.toList(),widget.cart.totalAmount);
+     print(Provider.of<Orders>(context).orders);
+      setState(() {
+        isLoading = false;
+      });
+      widget.cart.clear();
+    },textColor: Theme.of(context).primaryColor,);
   }
 }
