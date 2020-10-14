@@ -17,6 +17,7 @@ final _descFocusNode = FocusNode();
 final _imageUrlFocusNode = FocusNode();
 final _form = GlobalKey<FormState>();
 var isInit = true;
+var isLoading = false;
 var _editedProduct = Product(null,'','',0.0,'');
 var _initValues = {
   'title':'',
@@ -35,20 +36,42 @@ void _updateImageUrl(){
    }
 }
 
-void _saveForm() {
+Future<void> _saveForm() async {
  final isValid = _form.currentState.validate();
  if(!isValid)
    {
      return ;
    }
    _form.currentState.save();
-
+ setState(() {
+   isLoading = true;
+ });
  if(_editedProduct.id != null)
    {
-     Provider.of<Products>(context,listen: false).updateProduct(_editedProduct.id, _editedProduct);
-   }
+    await  Provider.of<Products>(context,listen: false).updateProduct(_editedProduct.id, _editedProduct);
+     }
+
  else {
-   Provider.of<Products>(context,listen: false).addProduct(_editedProduct);
+   try {
+     await Provider.of<Products>(context, listen: false).addProduct(
+         _editedProduct);
+   }
+   catch (error) {
+     showDialog(context: context, builder: (context) =>
+         AlertDialog(title: Text('An error occured'),
+           content: Text('Something went wrong'),
+           actions: [
+             FlatButton(child: Text('Okay'), onPressed: () {
+               Navigator.of(context).pop();
+             },)
+           ],
+         ));
+   }
+   setState(() {
+     isLoading = false;
+   });
+   Navigator.of(context).pop();
+
  }
 }
  @override
@@ -101,7 +124,7 @@ void dispose(){
         title:Text('Edit Product'),
         actions:[IconButton(icon:Icon(Icons.save),onPressed: _saveForm,)],
       ),
-      body: Padding(
+      body: isLoading ? Center(child: CircularProgressIndicator(), ) : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _form,
