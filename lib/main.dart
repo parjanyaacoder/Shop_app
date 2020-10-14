@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/custom_route.dart';
 import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/screens/cart_screen.dart';
 import 'package:shop_app/screens/edit_product_screen.dart';
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<Auth,Products>(
         update: ( context, auth, previousProducts) => Products(auth.token,previousProducts == null ? []:previousProducts.items,auth.userId),),
-    ChangeNotifierProvider(
+      ChangeNotifierProvider(
     create:(context) => Cart()),
      ChangeNotifierProxyProvider<Auth,Orders>(
        update: ( context, auth, previousOrders) => Orders(auth.token,previousOrders == null ? []:previousOrders.orders,auth.userId),
@@ -41,12 +42,14 @@ class MyApp extends StatelessWidget {
               accentColor: Colors.deepOrange,
               fontFamily: 'Lato',
               visualDensity: VisualDensity.adaptivePlatformDensity,
+              pageTransitionsTheme: PageTransitionsTheme(builders: {
+                TargetPlatform.android : CustomPageTransitionBuilder() ,
+                TargetPlatform.iOS: CustomPageTransitionBuilder() ,
+              })
             ),
-            home: ProductsOverviewScreen(),
-
-            // auth.isAuth ? ProductsOverviewScreen() : FutureBuilder(future: auth.tryAutoLogin(),builder: (ctx,snapshot) =>
-            //     snapshot.connectionState == ConnectionState.waiting ? SplashScreen() :
-            //     AuthScreen(),),
+            home: auth.isAuth ? ProductsOverviewScreen() : FutureBuilder(future: auth.tryAutoLogin(),builder: (ctx,snapshot) =>
+                snapshot.connectionState == ConnectionState.waiting ? SplashScreen() :
+                AuthScreen(),),
             routes: {
 
               ProductDetailsScreen.routeName:(ctx) => ProductDetailsScreen(),
